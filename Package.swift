@@ -5,17 +5,27 @@ import PackageDescription
 
 let package = Package(
     name: "ContractionIntervals",
+    platforms: [
+        .iOS(.v13)
+    ],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
             name: "ContractionIntervals",
             targets: ["ContractionIntervals"]),
     ],
+    dependencies: [
+        .package(url: "https://github.com/mergesort/Boutique.git", from: Version(2, 1, 0))
+    ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
-            name: "ContractionIntervals"),
+            name: "ContractionIntervals",
+            dependencies: [
+                .byName(name: "Boutique")
+            ]
+        ),
         .testTarget(
             name: "ContractionIntervalsTests",
             dependencies: ["ContractionIntervals"]),
