@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension IntervalManager {
+extension IntervalStore {
     public enum IntervalType: Codable {
         case contraction
         case `break`

@@ -7,7 +7,7 @@
 
 import Foundation
 
-public extension IntervalManager {
+public extension IntervalStore {
     class Interval: Codable {
         public let start: Date
         public let type: IntervalType?
