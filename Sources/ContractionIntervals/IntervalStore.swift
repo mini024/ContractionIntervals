@@ -93,8 +93,8 @@ public class IntervalStore: ObservableObject {
         if !ProcessInfo.processInfo.arguments.contains("CLEAR_TEST") {
             let durations = [75, 35, 50, 50, 55, 45, 60, 58, 63, 50]
             let frequencies = [10 * 60, 9 * 60, 9 * 60, 8 * 60, 8 * 60, 8 * 60, 8 * 60, 7 * 60, 5 * 60, 3 * 60]
-            let totalDurations = durations.reduce(0, { $0 + $1 })
-            var currentDate = Calendar.current.date(byAdding: DateComponents(second: -totalDurations), to: Date()) ?? Date()
+            let totalTime = durations.reduce(0, { $0 + $1 }) + frequencies.reduce(0, { $0 + $1 })
+            var currentDate = Calendar.current.date(byAdding: DateComponents(second: -totalTime), to: Date()) ?? Date()
             for (duration, frequency) in zip(durations, frequencies) {
                 if let end = Calendar.current.date(byAdding: DateComponents(second: duration), to: currentDate), let nextDate = Calendar.current.date(byAdding: DateComponents(second: frequency), to: end) {
                     do {

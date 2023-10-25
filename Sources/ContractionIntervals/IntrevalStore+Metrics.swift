@@ -22,7 +22,7 @@ public final class IntervalMetricsHelper {
         return nil
     }
     
-    private static func frequencyInBetween(_ start: Date, _ end: Date) -> String {
+    public static func frequencyInBetween(_ start: Date, _ end: Date) -> String {
         let formatter = DateComponentsFormatter()
         formatter.allowedUnits = [.minute,.second]
         formatter.unitsStyle = .abbreviated
@@ -32,8 +32,16 @@ public final class IntervalMetricsHelper {
         return formatter.string(from: time) ?? ""
     }
     
+    public static func getLastHourMinMaxFrequency(for intervals: [IntervalStore.Interval]) -> (String, String)? {
+        let lastHourIntervals = intervals.filter({ $0.start.timeIntervalSinceNow > -3600 })
+        return getMinMaxFrecuency(for: lastHourIntervals)
+    }
+    
     // MARK: MinMax Frequency
-    public static func getMinMaxFrecuency(for intervals: [IntervalStore.Interval]) -> (String, String)? {
+    /// Calculate the min and max time in between intervals
+    /// - Parameter intervals: All intervals to consider, most contain a start date.
+    /// - Returns: Tuple with min and max string values
+    static func getMinMaxFrecuency(for intervals: [IntervalStore.Interval]) -> (String, String)? {
         var min: TimeInterval?
         var max: TimeInterval?
         let previousIntervals: [IntervalStore.Interval?] = [nil] + intervals
