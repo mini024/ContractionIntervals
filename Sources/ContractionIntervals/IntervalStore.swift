@@ -17,6 +17,18 @@ extension Store where Item == IntervalStore.Interval {
 }
 
 public class IntervalStore: ObservableObject {
+    
+    enum StoreError: LocalizedError {
+        case contractionNotStarted
+        
+        public var errorDescription: String? {
+            switch self {
+            case .contractionNotStarted:
+                return "Tried to end contraction that hasn't been started."
+            }
+        }
+    }
+    
     public static let shared = IntervalStore()
     
     @Stored(in: .intervalStore)
@@ -30,8 +42,10 @@ public class IntervalStore: ObservableObject {
     }
     
     private init() {
-        Task {
-            await migrateIntervals()
+        if !ProcessInfo.processInfo.arguments.contains("SNAPSHOT_TESTS") {
+            Task {
+                await migrateIntervals()
+            }
         }
     }
     
@@ -49,15 +63,15 @@ public class IntervalStore: ObservableObject {
         }
     }
     
-    public func reset() async {
-        try? await self.$intervals.removeAll()
+    public func reset() async throws {
+        try await self.$intervals.removeAll()
         await $currentInterval.reset()
     }
     
-    public func startEndContraction() async {
+    public func startEndContraction() async throws {
         if isTrackingContraction {
             // End Contraction
-            await endContraction(at: Date())
+            try await endContraction(at: Date())
         } else {
             await startContraction(at: Date())
         }
@@ -73,23 +87,19 @@ public class IntervalStore: ObservableObject {
         await $currentInterval.set(Interval(start: date, type: .contraction))
     }
     
-    private func endContraction(at date: Date) async {
+    private func endContraction(at date: Date) async throws {
         if let currentInterval = currentInterval {
             currentInterval.end = date
-            do {
-                try await self.$intervals.insert(currentInterval)
-            } catch {
-                print(error)
-            }
+            try await self.$intervals.insert(currentInterval)
             await self.$currentInterval.set(nil)
         } else {
-            print("Tried to end interval that hasn't started")
+            throw StoreError.contractionNotStarted
         }
     }
     
 #if DEBUG
-    public func addTestData() async {
-        await reset()
+    public func addTestData() async throws {
+        try await reset()
         if !ProcessInfo.processInfo.arguments.contains("CLEAR_TEST") {
             let durations = [75, 35, 50, 50, 55, 45, 60, 58, 63, 50]
             let frequencies = [10 * 60, 9 * 60, 9 * 60, 8 * 60, 8 * 60, 8 * 60, 8 * 60, 7 * 60, 5 * 60, 3 * 60]
@@ -97,12 +107,8 @@ public class IntervalStore: ObservableObject {
             var currentDate = Calendar.current.date(byAdding: DateComponents(second: -totalTime), to: Date()) ?? Date()
             for (duration, frequency) in zip(durations, frequencies) {
                 if let end = Calendar.current.date(byAdding: DateComponents(second: duration), to: currentDate), let nextDate = Calendar.current.date(byAdding: DateComponents(second: frequency), to: end) {
-                    do {
-                        try await self.$intervals.insert(Interval(start: currentDate, type: .contraction, end: end))
-                        currentDate = nextDate
-                    } catch {
-                        print(error)
-                    }
+                    try await self.$intervals.insert(Interval(start: currentDate, type: .contraction, end: end))
+                    currentDate = nextDate
                 }
             }
         }

@@ -49,6 +49,10 @@ public final class IntervalMetricsHelper {
             if let previous = previous {
                 let frequency = current.start.timeIntervalSince(previous.start)
                 
+                if frequency < 0 {
+                    print("--- Negative frequency")
+                }
+                
                 if min == nil || frequency < min! {
                     min = frequency
                 }
