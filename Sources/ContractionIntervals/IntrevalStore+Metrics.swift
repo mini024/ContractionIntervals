@@ -9,6 +9,11 @@ import Foundation
 
 public final class IntervalMetricsHelper {
     
+    public struct MinMax {
+        public let min: String
+        public let max: String
+    }
+    
     // MARK: Last Frequency
     public static func getLastFrecuency(for intervals: [IntervalStore.Interval]) -> String? {
         let lastIndex = intervals.count - 1
@@ -32,7 +37,7 @@ public final class IntervalMetricsHelper {
         return formatter.string(from: time) ?? ""
     }
     
-    public static func getLastHourMinMaxFrequency(for intervals: [IntervalStore.Interval]) -> (String, String)? {
+    public static func getLastHourMinMaxFrequency(for intervals: [IntervalStore.Interval]) -> MinMax? {
         let lastHourIntervals = intervals.filter({ $0.start.timeIntervalSinceNow > -3600 })
         return getMinMaxFrecuency(for: lastHourIntervals)
     }
@@ -40,8 +45,8 @@ public final class IntervalMetricsHelper {
     // MARK: MinMax Frequency
     /// Calculate the min and max time in between intervals
     /// - Parameter intervals: All intervals to consider, most contain a start date.
-    /// - Returns: Tuple with min and max string values
-    static func getMinMaxFrecuency(for intervals: [IntervalStore.Interval]) -> (String, String)? {
+    /// - Returns: `MinMax` object, where the min and max are strings.
+    static func getMinMaxFrecuency(for intervals: [IntervalStore.Interval]) -> MinMax? {
         var min: TimeInterval?
         var max: TimeInterval?
         let previousIntervals: [IntervalStore.Interval?] = [nil] + intervals
@@ -69,9 +74,28 @@ public final class IntervalMetricsHelper {
         formatter.zeroFormattingBehavior = .pad
         
         if let min = min, let max = max, let formattedMin = formatter.string(from: min), let formattedMax = formatter.string(from: max) {
-            return (formattedMin, formattedMax)
+            return MinMax(min: formattedMin, max: formattedMax)
         }
         
+        return nil
+    }
+    
+    // MARK: Last Contraction Length
+    static public func getLastContractionLength(for intervals: [IntervalStore.Interval]) -> String? {
+        guard let last = intervals.last else {
+            return nil
+        }
+        
+        return last.length
+    }
+    
+    // MARK: MinMax Contraction Length
+    static public func getMinMaxContractionLength(for intervals: [IntervalStore.Interval]) -> MinMax? {
+        let lastHourIntervals = intervals.filter({ $0.start.timeIntervalSinceNow > -3600 })
+        if let min = lastHourIntervals.min(by: { $0.length < $1.length })?.length, let max = lastHourIntervals.max(by: { $0.length < $1.length })?.length {
+            return MinMax(min: min, max: max)
+        }
+
         return nil
     }
 
