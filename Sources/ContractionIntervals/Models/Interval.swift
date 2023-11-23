@@ -30,20 +30,16 @@ public extension IntervalStore {
             return formatter
         }
         
-        var timeFormatter: DateComponentsFormatter {
-            let formatter = DateComponentsFormatter()
-            formatter.allowedUnits = [.minute,.second]
-            formatter.unitsStyle = .abbreviated
-            formatter.zeroFormattingBehavior = .pad
-            return formatter
+        public var lengthValue: TimeInterval? {
+            guard let end = end, type == .contraction else {
+                return nil
+            }
+            let time = end.timeIntervalSince(start)
+            return time
         }
         
         public var length: String {
-            guard let end = end, type == .contraction else {
-                return "   "
-            }
-            let time = end.timeIntervalSince(start)
-            return timeFormatter.string(from: time) ?? ""
+            return lengthValue?.formattedString ?? ""
         }
         
         public var frequency: String {
@@ -51,7 +47,7 @@ public extension IntervalStore {
                 return "   "
             }
             let time = end.timeIntervalSince(start)
-            return timeFormatter.string(from: time) ?? ""
+            return time.formattedString ?? ""
         }
         
         public var started: String {

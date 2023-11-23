@@ -101,8 +101,8 @@ public class IntervalStore: ObservableObject {
     public func addTestData() async throws {
         try await reset()
         if !ProcessInfo.processInfo.arguments.contains("CLEAR_TEST") {
-            let durations = [75, 35, 50, 50, 55, 45, 60, 58, 63, 50]
-            let frequencies = [10 * 60, 9 * 60, 9 * 60, 8 * 60, 8 * 60, 8 * 60, 8 * 60, 7 * 60, 5 * 60, 3 * 60]
+            let durations = [75, 45, 50, 50, 55, 45, 60, 58, 63, 50]
+            let frequencies = [4 * 60, 4 * 60, 4 * 60, 4 * 60, 4 * 60, 4 * 60, 4 * 60, 4 * 60, 4 * 60, 4 * 60]
             let totalTime = durations.reduce(0, { $0 + $1 }) + frequencies.reduce(0, { $0 + $1 })
             var currentDate = Calendar.current.date(byAdding: DateComponents(second: -totalTime), to: Date()) ?? Date()
             for (duration, frequency) in zip(durations, frequencies) {
